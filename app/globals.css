@@ -2,20 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 248, 250, 252;
-  --background-end-rgb: 255, 255, 255;
+@layer base {
+  :root {
+    --font-sans: 'Inter', sans-serif;
+    
+    --background: 0 0% 98%;
+    --foreground: 240 10% 3.9%;
+    
+    --primary: 81 13% 58%;
+    --primary-foreground: 0 0% 98%;
+    
+    --accent: 34 68% 70%;
+    --accent-foreground: 24 9.8% 10%;
+    
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    
+    --primary: 81 13% 58%;
+    --primary-foreground: 240 5.9% 10%;
+    
+    --accent: 34 68% 70%;
+    --accent-foreground: 0 0% 98%;
+    
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-    to bottom,
-    rgb(var(--background-start-rgb)),
-    rgb(var(--background-end-rgb))
-  );
-  -webkit-tap-highlight-color: transparent;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
 }
 
 /* モバイル最適化 */
@@ -32,18 +57,23 @@ body {
   }
 }
 
-/* アニメーション */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+/* カスタムアニメーション */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-}
 
-.animate-fadeIn {
-  animation: fadeIn 0.3s ease-out forwards;
+  .animate-scale-in {
+    animation: scaleIn 0.2s ease-out;
+  }
+  
+  @keyframes scaleIn {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
 }

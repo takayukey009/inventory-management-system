@@ -1,163 +1,110 @@
-import { useState } from 'react';
 import { useInventoryStore } from '@/stores/inventory';
-import { formatDistanceToNow, format } from 'date-fns';
+import { format } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Plus, Minus } from 'lucide-react';
-import type { InventoryItem } from '@/types/inventory';
+import { ArrowDown, ArrowUp, Minus, Plus } from 'lucide-react';
 
 interface InventoryCardProps {
   item: InventoryItem;
-  isDarkMode: boolean;
 }
 
-export function InventoryCard({ item, isDarkMode }: InventoryCardProps) {
-  const updateStock = useInventoryStore(state => state.updateStock);
-  const [isUpdating, setIsUpdating] = useState(false);
+export const InventoryCard = ({ item }: InventoryCardProps) => {
+  const { updateStock } = useInventoryStore();
 
-  const stockPercentage = (item.currentStock / item.recommendedStock) * 100;
-  const stockStatus = stockPercentage <= 30 ? 'low' : stockPercentage <= 70 ? 'medium' : 'high';
-
-  const handleStockUpdate = (amount: number) => {
-    setIsUpdating(true);
-    const newStock = Math.max(0, item.currentStock + amount);
-    updateStock(item.id, newStock);
-    setIsUpdating(false);
+  const getStockColor = (percentage: number) => {
+    if (percentage <= 30) return 'text-red-500 dark:text-red-400';
+    if (percentage <= 50) return 'text-yellow-500 dark:text-yellow-400';
+    return 'text-emerald-500 dark:text-emerald-400';
   };
 
-  const getStatusColor = (status: string) => {
-    if (isDarkMode) {
-      switch (status) {
-        case 'low':
-          return 'bg-rose-500/20 text-rose-300';
-        case 'medium':
-          return 'bg-accent-500/20 text-accent-300';
-        case 'high':
-          return 'bg-emerald-500/20 text-emerald-300';
-        default:
-          return 'bg-gray-500/20 text-gray-300';
-      }
-    } else {
-      switch (status) {
-        case 'low':
-          return 'bg-rose-50 text-rose-600';
-        case 'medium':
-          return 'bg-accent-50 text-accent-600';
-        case 'high':
-          return 'bg-emerald-50 text-emerald-600';
-        default:
-          return 'bg-gray-50 text-gray-600';
-      }
-    }
-  };
+  const stockPercentage = (item.currentStock / item.maxStock) * 100;
+  const stockColor = getStockColor(stockPercentage);
 
   return (
-    <div className={`rounded-xl overflow-hidden transition-all duration-200 ${
-      isDarkMode 
-        ? 'bg-gray-800 border border-gray-700 shadow-lg shadow-gray-900/20' 
-        : 'bg-white border border-primary-100 shadow-lg shadow-primary-900/5'
-    }`}>
-      {/* カードヘッダー */}
-      <div className={`px-4 py-3 border-b transition-colors ${
-        isDarkMode ? 'border-gray-700' : 'border-primary-50'
-      }`}>
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h3 className={`font-medium ${
-              isDarkMode ? 'text-white' : 'text-primary-900'
-            }`}>
-              {item.name}
-            </h3>
-            <p className={`text-sm ${
-              isDarkMode ? 'text-gray-400' : 'text-primary-500'
-            }`}>
-              {item.category}
-            </p>
-          </div>
-          <span className={`px-2 py-1 rounded-lg text-sm ${getStatusColor(stockStatus)}`}>
-            {stockPercentage.toFixed(0)}%
-          </span>
+    <div className="group relative overflow-hidden rounded-2xl bg-white/50 p-6 shadow-xl shadow-black/5 backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:shadow-black/10 dark:bg-gray-900/50 dark:shadow-white/5 dark:hover:shadow-white/10">
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:from-primary/20 dark:to-accent/20" />
+      
+      {/* ヘッダー */}
+      <div className="mb-4 flex items-start justify-between">
+        <div>
+          <h3 className="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">
+            {item.name}
+          </h3>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {item.category}
+          </p>
+        </div>
+        <div className={`flex items-center gap-2 ${stockColor}`}>
+          <span className="text-2xl font-bold">{Math.round(stockPercentage)}%</span>
         </div>
       </div>
 
-      {/* カードボディ */}
-      <div className="p-4">
-        {/* 在庫バー */}
-        <div className="mb-4">
-          <div className={`h-2 rounded-full overflow-hidden ${
-            isDarkMode ? 'bg-gray-700' : 'bg-primary-100'
-          }`}>
-            <div
-              className={`h-full transition-all duration-200 ${
-                stockStatus === 'low' 
-                  ? 'bg-rose-500' 
-                  : stockStatus === 'medium' 
-                    ? 'bg-accent-500' 
-                    : 'bg-emerald-500'
-              }`}
-              style={{ width: `${Math.min(100, stockPercentage)}%` }}
-            />
-          </div>
-          <div className="mt-2 flex justify-between text-sm">
-            <span className={isDarkMode ? 'text-gray-400' : 'text-primary-500'}>
-              現在: {item.currentStock}{item.unit}
-            </span>
-            <span className={isDarkMode ? 'text-gray-400' : 'text-primary-500'}>
-              推奨: {item.recommendedStock}{item.unit}
-            </span>
-          </div>
+      {/* 在庫バー */}
+      <div className="mb-6">
+        <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+          <div
+            className={`h-full rounded-full transition-all duration-500 ${
+              stockPercentage <= 30
+                ? 'bg-red-500'
+                : stockPercentage <= 50
+                ? 'bg-yellow-500'
+                : 'bg-emerald-500'
+            }`}
+            style={{ width: `${stockPercentage}%` }}
+          />
         </div>
+      </div>
 
-        {/* 操作ボタン */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => handleStockUpdate(-1)}
-            disabled={isUpdating || item.currentStock <= 0}
-            className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isDarkMode
-                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600'
-                : 'bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:bg-gray-50 disabled:text-gray-400'
-            }`}
-          >
-            <Minus size={16} /> -1
-          </button>
-          <button
-            onClick={() => handleStockUpdate(1)}
-            disabled={isUpdating}
-            className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isDarkMode
-                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600'
-                : 'bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:bg-gray-50 disabled:text-gray-400'
-            }`}
-          >
-            <Plus size={16} /> +1
-          </button>
-          <button
-            onClick={() => handleStockUpdate(5)}
-            disabled={isUpdating}
-            className={`flex-1 flex items-center justify-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-              isDarkMode
-                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600 disabled:bg-gray-800 disabled:text-gray-600'
-                : 'bg-primary-50 text-primary-600 hover:bg-primary-100 disabled:bg-gray-50 disabled:text-gray-400'
-            }`}
-          >
-            <Plus size={16} /> +5
-          </button>
-        </div>
-
-        {/* 月間消費量と最終更新 */}
-        <div className="mt-4 space-y-1">
-          <p className={`text-xs ${
-            isDarkMode ? 'text-gray-500' : 'text-primary-400'
-          }`}>
-            今月の消費量: {item.monthlyConsumption}{item.unit}
+      {/* 在庫情報 */}
+      <div className="mb-6 grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">現在の在庫</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+            {item.currentStock}
+            <span className="ml-1 text-sm text-gray-500 dark:text-gray-400">/ {item.maxStock}</span>
           </p>
-          <p className={`text-xs ${
-            isDarkMode ? 'text-gray-500' : 'text-primary-400'
-          }`}>
-            最終更新: {format(new Date(item.lastUpdated), 'yyyy/MM/dd HH:mm', { locale: ja })}
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-500 dark:text-gray-400">今月の消費</p>
+          <p className="mt-1 text-2xl font-semibold text-gray-900 dark:text-white">
+            {item.monthlyConsumption}
           </p>
         </div>
       </div>
+
+      {/* コントロール */}
+      <div className="grid grid-cols-4 gap-2">
+        <button
+          onClick={() => updateStock(item.id, -5)}
+          className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <ArrowDown className="h-4 w-4" />
+          <span className="ml-1">-5</span>
+        </button>
+        <button
+          onClick={() => updateStock(item.id, -1)}
+          className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <Minus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => updateStock(item.id, 1)}
+          className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+        <button
+          onClick={() => updateStock(item.id, 5)}
+          className="flex items-center justify-center rounded-xl bg-gray-100 px-3 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 active:scale-95 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          <ArrowUp className="h-4 w-4" />
+          <span className="ml-1">+5</span>
+        </button>
+      </div>
+
+      {/* 最終更新 */}
+      <p className="mt-4 text-xs text-gray-500 dark:text-gray-400">
+        最終更新: {format(new Date(item.lastUpdated), 'M月d日 HH:mm', { locale: ja })}
+      </p>
     </div>
   );
-}
+};

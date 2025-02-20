@@ -1,39 +1,37 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { InventoryCard } from "@/components/InventoryCard";
 import { useInventoryStore } from "@/stores/inventory";
-import { SunIcon, MoonIcon, FilterIcon, ArrowUpDown } from 'lucide-react';
+import { Moon, Sun, Filter, SortAsc } from 'lucide-react';
 import { startOfMonth } from 'date-fns';
 
 export default function InventoryPage() {
   const items = useInventoryStore(state => state.items);
   const resetMonthlyConsumption = useInventoryStore(state => state.resetMonthlyConsumption);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<'name' | 'stock' | 'category'>('name');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
-  const categories = Array.from(new Set(items.map(item => item.category)));
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
 
-  const filteredAndSortedItems = items
-    .filter(item => !selectedCategory || item.category === selectedCategory)
+  const categories = ['all', ...new Set(items.map(item => item.category))];
+
+  const sortedAndFilteredItems = items
+    .filter(item => selectedCategory === 'all' || item.category === selectedCategory)
     .sort((a, b) => {
       switch (sortBy) {
         case 'name':
           return a.name.localeCompare(b.name);
         case 'stock':
-          return (a.currentStock / a.recommendedStock) - (b.currentStock / b.recommendedStock);
+          return (b.currentStock / b.recommendedStock) - (a.currentStock / a.recommendedStock);
         case 'category':
           return a.category.localeCompare(b.category);
         default:
           return 0;
       }
     });
-
-  const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
 
   // 月初めに消費量をリセット
   useEffect(() => {
@@ -48,70 +46,58 @@ export default function InventoryPage() {
   }, [items, resetMonthlyConsumption]);
 
   return (
-    <main className={`min-h-screen transition-colors duration-200 
-      ${isDarkMode 
-        ? 'dark bg-gray-900' 
-        : 'bg-gradient-to-b from-primary-50 to-base'}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 transition-colors duration-300 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950`}>
       {/* ヘッダー */}
-      <header className={`sticky top-0 z-10 backdrop-blur-sm border-b transition-colors duration-200
-        ${isDarkMode 
-          ? 'bg-gray-900/80 border-gray-800' 
-          : 'bg-white/80 border-primary-100'}`}>
-        <div className="max-w-5xl mx-auto px-4 py-4">
+      <header className="sticky top-0 z-10 backdrop-blur-xl">
+        <div className="mx-auto max-w-7xl px-4 py-4">
           <div className="flex items-center justify-between">
-            <h1 className={`text-2xl font-bold ${
-              isDarkMode ? 'text-white' : 'text-primary-700'
-            }`}>
+            <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
               在庫管理
             </h1>
-            <div className="flex items-center gap-4">
-              {/* フィルターメニュー */}
-              <div className="flex items-center gap-2">
-                <select
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                    ${isDarkMode 
-                      ? 'bg-gray-800 text-gray-200 border-gray-700' 
-                      : 'bg-white text-primary-600 border-primary-200'}`}
-                  onChange={(e) => setSelectedCategory(e.target.value || null)}
-                  value={selectedCategory || ''}
-                >
-                  <option value="">全てのカテゴリー</option>
-                  {categories.map(category => (
-                    <option key={category} value={category}>{category}</option>
-                  ))}
-                </select>
-                <select
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors
-                    ${isDarkMode 
-                      ? 'bg-gray-800 text-gray-200 border-gray-700' 
-                      : 'bg-white text-primary-600 border-primary-200'}`}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  value={sortBy}
-                >
-                  <option value="name">名前順</option>
-                  <option value="stock">在庫率順</option>
-                  <option value="category">カテゴリー順</option>
-                </select>
-              </div>
-              {/* ダークモードトグル */}
-              <button
-                onClick={toggleDarkMode}
-                className={`p-2 rounded-full transition-colors
-                  ${isDarkMode 
-                    ? 'bg-gray-800 text-accent-400 hover:bg-gray-700' 
-                    : 'bg-primary-50 text-primary-600 hover:bg-primary-100'}`}
+            <button
+              onClick={toggleDarkMode}
+              className="rounded-full p-2 text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </button>
+          </div>
+
+          {/* フィルターとソート */}
+          <div className="mt-4 flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="rounded-lg border-0 bg-gray-100 px-3 py-1.5 text-sm text-gray-900 focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
               >
-                {isDarkMode ? <SunIcon size={20} /> : <MoonIcon size={20} />}
-              </button>
+                {categories.map(category => (
+                  <option key={category} value={category}>
+                    {category === 'all' ? 'すべてのカテゴリー' : category}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center gap-2">
+              <SortAsc className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'name' | 'stock' | 'category')}
+                className="rounded-lg border-0 bg-gray-100 px-3 py-1.5 text-sm text-gray-900 focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:text-white"
+              >
+                <option value="name">名前順</option>
+                <option value="stock">在庫率順</option>
+                <option value="category">カテゴリー順</option>
+              </select>
             </div>
           </div>
         </div>
       </header>
 
       {/* メインコンテンツ */}
-      <div className="max-w-5xl mx-auto px-4 py-6">
+      <main className="mx-auto max-w-7xl px-4 py-8">
         {/* 在庫アラート */}
-        {filteredAndSortedItems.some(item => (item.currentStock / item.recommendedStock) < 0.3) && (
+        {sortedAndFilteredItems.some(item => (item.currentStock / item.recommendedStock) < 0.3) && (
           <div className={`mb-6 p-4 rounded-lg border ${
             isDarkMode 
               ? 'bg-rose-500/10 border-rose-800 text-rose-200' 
@@ -119,7 +105,7 @@ export default function InventoryPage() {
           }`}>
             <h2 className="font-medium mb-2">⚠️ 在庫アラート</h2>
             <ul className="text-sm space-y-1">
-              {filteredAndSortedItems
+              {sortedAndFilteredItems
                 .filter(item => (item.currentStock / item.recommendedStock) < 0.3)
                 .map(item => (
                   <li key={item.id}>
@@ -129,14 +115,12 @@ export default function InventoryPage() {
             </ul>
           </div>
         )}
-
-        {/* 在庫カードグリッド */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredAndSortedItems.map((item) => (
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {sortedAndFilteredItems.map((item) => (
             <InventoryCard key={item.id} item={item} isDarkMode={isDarkMode} />
           ))}
         </div>
-      </div>
+      </main>
 
       {/* フッター */}
       <footer className={`mt-auto py-6 text-center text-sm ${
@@ -144,6 +128,6 @@ export default function InventoryPage() {
       }`}>
         &copy; 2025 在庫管理システム
       </footer>
-    </main>
+    </div>
   );
 }

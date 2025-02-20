@@ -2,21 +2,27 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "在庫管理システム",
-  description: "シンプルで使いやすい在庫管理アプリ",
+  title: "Inventory Management System",
+  description: "Restaurant Inventory Tracking System",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html lang="ja">
-      <body className={inter.className}>{children}</body>
+    <html lang="ja" suppressHydrationWarning>
+      <body className={`${inter.variable} font-sans`}>
+        {children}
+      </body>
     </html>
   );
 }
