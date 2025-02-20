@@ -1,79 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --font-sans: 'Inter', sans-serif;
-    
-    --background: 0 0% 98%;
-    --foreground: 240 10% 3.9%;
-    
-    --primary: 81 13% 58%;
-    --primary-foreground: 0 0% 98%;
-    
-    --accent: 34 68% 70%;
-    --accent-foreground: 24 9.8% 10%;
-    
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-  }
+:root {
+  --primary: #7B8B6F;
+  --primary-light: #D4DCCD;
+  --accent: #E8B87D;
+  --background: #FAFAF8;
+}
 
-  .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    
-    --primary: 81 13% 58%;
-    --primary-foreground: 240 5.9% 10%;
-    
-    --accent: 34 68% 70%;
-    --accent-foreground: 0 0% 98%;
-    
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-  }
+.dark {
+  --primary: #96A58C;
+  --primary-light: #2A2E27;
+  --accent: #E8B87D;
+  --background: #1A1C18;
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
+    @apply bg-[--background] text-gray-900 dark:text-gray-100;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }
 
-/* モバイル最適化 */
-@media (max-width: 768px) {
-  * {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-
-  button {
-    cursor: default;
-    touch-action: manipulation;
-  }
+.inventory-card {
+  @apply relative overflow-hidden rounded-2xl bg-white/80 dark:bg-gray-900/50;
+  @apply p-6 transition-all duration-300;
+  @apply shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)];
+  @apply backdrop-blur-xl;
+  @apply border border-gray-100 dark:border-gray-800;
 }
 
-/* カスタムアニメーション */
-@layer utilities {
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-  }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+.inventory-card:hover {
+  @apply shadow-[0_20px_40px_rgb(0,0,0,0.08)] dark:shadow-[0_20px_40px_rgb(0,0,0,0.2)];
+  @apply transform -translate-y-1;
+}
 
-  .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
-  }
-  
-  @keyframes scaleIn {
-    from { transform: scale(0.95); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
+.inventory-card::before {
+  content: '';
+  @apply absolute inset-0 bg-gradient-to-br from-[--primary-light]/10 to-[--accent]/5;
+  @apply opacity-0 transition-opacity duration-300;
+}
+
+.inventory-card:hover::before {
+  @apply opacity-100;
+}
+
+.stock-bar {
+  @apply h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-800;
+}
+
+.stock-bar-fill {
+  @apply h-full rounded-full transition-all duration-500;
+}
+
+.stock-bar-fill.low {
+  @apply bg-red-500;
+}
+
+.stock-bar-fill.medium {
+  @apply bg-[--accent];
+}
+
+.stock-bar-fill.high {
+  @apply bg-[--primary];
+}
+
+.control-button {
+  @apply flex items-center justify-center gap-1;
+  @apply rounded-xl px-4 py-2.5 text-sm font-medium;
+  @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+  @apply dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700;
+  @apply transition-all duration-200 active:scale-95;
+}
+
+.header {
+  @apply sticky top-0 z-10;
+  @apply bg-white/80 dark:bg-gray-900/80;
+  @apply border-b border-gray-200 dark:border-gray-800;
+  @apply backdrop-blur-xl;
+}
+
+.filter-select {
+  @apply rounded-lg border-0 bg-gray-100 px-4 py-2;
+  @apply text-sm text-gray-900 focus:ring-2 focus:ring-[--primary];
+  @apply dark:bg-gray-800 dark:text-white;
 }
