@@ -1,11 +1,11 @@
 export interface InventoryItem {
   id: string;
   name: string;
+  category: string;
   currentStock: number;
   recommendedStock: number;
-  unit: '個' | '本' | '袋' | 'パック';
-  category: '調味料' | '野菜' | '卵・乳製品';
-  lastUpdated: string;  // ISO文字列形式で保存
+  unit: string;
+  lastUpdated: Date;
+  monthlyConsumption: number;
+  lastMonthReset: Date;
 }
-
-export type StockUpdateType = -1 | 1 | 5;

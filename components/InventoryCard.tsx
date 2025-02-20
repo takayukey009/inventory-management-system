@@ -3,17 +3,7 @@ import { useInventoryStore } from '@/stores/inventory';
 import { formatDistanceToNow, format } from 'date-fns';
 import { ja } from 'date-fns/locale';
 import { Plus, Minus } from 'lucide-react';
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  category: string;
-  currentStock: number;
-  recommendedStock: number;
-  unit: string;
-  lastUpdated: Date;
-  monthlyConsumption: number;
-}
+import type { InventoryItem } from '@/types/inventory';
 
 interface InventoryCardProps {
   item: InventoryItem;
@@ -26,6 +16,13 @@ export function InventoryCard({ item, isDarkMode }: InventoryCardProps) {
 
   const stockPercentage = (item.currentStock / item.recommendedStock) * 100;
   const stockStatus = stockPercentage <= 30 ? 'low' : stockPercentage <= 70 ? 'medium' : 'high';
+
+  const handleStockUpdate = (amount: number) => {
+    setIsUpdating(true);
+    const newStock = Math.max(0, item.currentStock + amount);
+    updateStock(item.id, newStock);
+    setIsUpdating(false);
+  };
 
   const getStatusColor = (status: string) => {
     if (isDarkMode) {
@@ -51,13 +48,6 @@ export function InventoryCard({ item, isDarkMode }: InventoryCardProps) {
           return 'bg-gray-50 text-gray-600';
       }
     }
-  };
-
-  const handleStockUpdate = async (amount: number) => {
-    setIsUpdating(true);
-    const newStock = Math.max(0, item.currentStock + amount);
-    await updateStock(item.id, newStock);
-    setIsUpdating(false);
   };
 
   return (
